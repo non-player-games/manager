@@ -17,20 +17,41 @@ func Hello() {
 func RunGame(engineURL string) {
 	// gameEngine := make(chan string)
 	// until game ends
-	onCreateRequest(engineURL)
+	players := []Player{{PID: 0, Name: "Eric"}, {PID: 1, Name: "Sam"}}
+	onCreate(engineURL, players)
+	onStart(engineURL)
+	for _, player := range players {
+		getState(engineURL, player.PID)
+	}
 }
 
-func onCreateRequest(engineURL string) {
-	playerJSON, _ := json.Marshal([2]Player{{PID: 0, Name: "Eric"}, {PID: 1, Name: "Sam"}})
+func onCreate(engineURL string, players []Player) {
 	onCreateJSON, _ := json.Marshal(Action{
 		Type:    "onCreate",
-		Payload: string(playerJSON),
+		Payload: players,
 	})
-	httpPost(engineURL+"/game-engine", onCreateJSON)
-
 	fmt.Println(string(onCreateJSON))
+	httpPost(engineURL+"/game-engine", onCreateJSON)
 }
 
+func onStart(engineURL string) {
+	onCreateJSON, _ := json.Marshal(Action{
+		Type: "onStart",
+	})
+	fmt.Println(string(onCreateJSON))
+	httpPost(engineURL+"/game-engine", onCreateJSON)
+}
+
+func getState(engineURL string, playerID int) {
+	onCreateJSON, _ := json.Marshal(Action{
+		Type:    "getState",
+		Payload: Player{PID: playerID},
+	})
+	fmt.Println(string(onCreateJSON))
+	httpPost(engineURL+"/game-engine", onCreateJSON)
+}
+
+// abstract out the http call boiler plate and error handling
 func httpPost(url string, payload []byte) string {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
