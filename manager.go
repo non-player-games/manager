@@ -17,12 +17,16 @@ func Hello() {
 func RunGame(engineURL string) {
 	// gameEngine := make(chan string)
 	// until game ends
-	players := []Player{{PID: 0, Name: "Eric"}, {PID: 1, Name: "Sam"}}
+	players := []Player{{PID: 0, Name: "Eric"}}
 	onCreate(engineURL, players)
 	onStart(engineURL)
+	var botMove string
 	for _, player := range players {
-		getState(engineURL, player.PID)
+		playerState := getState(engineURL, player.PID)
+		botMove = botTurnStart(playerState)
 	}
+	result := processMoves(engineURL, botMove)
+	fmt.Println(result)
 }
 
 func onCreate(engineURL string, players []Player) {
@@ -42,13 +46,36 @@ func onStart(engineURL string) {
 	httpPost(engineURL+"/game-engine", onCreateJSON)
 }
 
-func getState(engineURL string, playerID int) {
+func getState(engineURL string, playerID int) string {
 	onCreateJSON, _ := json.Marshal(Action{
 		Type:    "getState",
 		Payload: Player{PID: playerID},
 	})
 	fmt.Println(string(onCreateJSON))
-	httpPost(engineURL+"/game-engine", onCreateJSON)
+	return httpPost(engineURL+"/game-engine", onCreateJSON)
+}
+
+// as for now, bot turn start is random move for our game engine (bot saving
+// prince).
+// TODO: think about how to pass bot into this argument
+func botTurnStart(botState string) string {
+	return "n"
+}
+
+func processMoves(engineURL string, botMove string) string {
+	processMoveJSON, _ := json.Marshal(Action{
+		Type: "processMove",
+		Payload: Moves{
+			GID: 0,
+			Moves: []Move{
+				Move{
+					PID:  0,
+					Move: botMove,
+				},
+			},
+		},
+	})
+	return httpPost(engineURL, processMoveJSON)
 }
 
 // abstract out the http call boiler plate and error handling
