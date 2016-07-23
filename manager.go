@@ -3,14 +3,14 @@ package manager
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
 // Hello is a simple hello function to test working
 func Hello() {
-	fmt.Println("Hello manager")
+	log.Println("Hello manager")
 }
 
 // RunGame is the main method to manage the game life cycle between bots and game engine
@@ -26,7 +26,7 @@ func RunGame(engineURL string) {
 		botMove = botTurnStart(playerState)
 	}
 	result := processMoves(engineURL, botMove)
-	fmt.Println(result)
+	log.Println(result)
 }
 
 func onCreate(engineURL string, players []Player) {
@@ -34,7 +34,7 @@ func onCreate(engineURL string, players []Player) {
 		Type:    "onCreate",
 		Payload: players,
 	})
-	fmt.Println(string(onCreateJSON))
+	log.Println(string(onCreateJSON))
 	httpPost(engineURL+"/game-engine", onCreateJSON)
 }
 
@@ -42,7 +42,7 @@ func onStart(engineURL string) {
 	onCreateJSON, _ := json.Marshal(Action{
 		Type: "onStart",
 	})
-	fmt.Println(string(onCreateJSON))
+	log.Println(string(onCreateJSON))
 	httpPost(engineURL+"/game-engine", onCreateJSON)
 }
 
@@ -51,7 +51,7 @@ func getState(engineURL string, playerID int) string {
 		Type:    "getState",
 		Payload: Player{PID: playerID},
 	})
-	fmt.Println(string(onCreateJSON))
+	log.Println(string(onCreateJSON))
 	return httpPost(engineURL+"/game-engine", onCreateJSON)
 }
 
@@ -90,10 +90,10 @@ func httpPost(url string, payload []byte) string {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
+	log.Println("response Status:", resp.Status)
+	log.Println("response Headers:", resp.Header)
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	log.Println("response Body:", string(body))
 
 	return string(body)
 }
